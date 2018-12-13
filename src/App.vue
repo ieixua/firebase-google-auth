@@ -1,12 +1,73 @@
 <template>
   <div id="app">
+    <div><pre>{{$data}}</pre></div>
+
     <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
+      <RouterLink to="/">Home</RouterLink> |
+      <RouterLink to="/about">About</RouterLink>
     </div>
-    <router-view/>
+
+    <button @click="login">login</button>
+    <button @click="logout">logout</button>
+    <RouterView/>
   </div>
 </template>
+
+<script>
+import firebase from "firebase";
+import "firebase";
+import dataAccessConfig from "./components/dataAccessConfig";
+
+export default {
+  data() {
+    return {
+      firebaseUser: null,
+      token: "",
+      error: null
+    };
+  },
+  created() {
+    var self = this;
+
+    if (!firebase.currentUser) {
+      firebase.initializeApp(dataAccessConfig);
+
+      firebase
+        .auth()
+        .getRedirectResult()
+        .then(function(result) {
+          if (result.credential) {
+            // This gives you a Google Access Token. You can use it to access the Google API.
+            self.token = result.credential.accessToken;
+          }
+        })
+        .catch(function(error) {
+          // Handle Errors here.
+          self.error = error;
+        });
+    } else {
+      firebase.initializeApp(dataAccessConfig);
+      this.firebaseUser = firebase.auth().currentUser;
+    }
+
+    // Listening for auth state changes.
+    // [START authstatelistener]
+    firebase.auth().onAuthStateChanged(function() {
+      self.firebaseUser = firebase.auth().currentUser;
+    });
+  },
+  methods: {
+    login() {
+      var provider = new firebase.auth.GoogleAuthProvider();
+      firebase.auth().signInWithRedirect(provider);
+    },
+    logout() {
+      firebase.auth().signOut();
+    }
+  }
+};
+</script>
+
 
 <style>
 #app {
