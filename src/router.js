@@ -11,10 +11,10 @@ let router = new Router({
     {
       path: "/",
       name: "home",
-      component: Home,
+      component: Home /* ,
       meta: {
         requiresAuth: true
-      }
+      } */
     },
     {
       path: "/about",
@@ -49,8 +49,8 @@ let router = new Router({
 });
 
 // Nav Guard
-
-/* router.beforeEach((to, from, next) => {
+/* 
+router.beforeEach((to, from, next) => {
   console.log("beforeEach", to, from, next);
 
   next();

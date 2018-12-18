@@ -1,6 +1,9 @@
 <template>
   <div id="app">
-    <div><pre>{{$data}}</pre></div>
+    <div>isSigned:{{isSigned}}</div>
+    <div>user: <pre>{{firebaseUser}}</pre></div>
+    <div>token: <pre>{{token}}</pre></div>
+    <div>error: <pre>{{error}}</pre></div>
 
     <div id="nav">
       <RouterLink to="/">Home</RouterLink> |
@@ -14,14 +17,13 @@
 </template>
 
 <script>
-import firebase from "firebase";
-import "firebase";
-import dataAccessConfig from "./components/dataAccessConfig";
+import auth from "./components/auth";
 
 export default {
   data() {
     return {
       firebaseUser: null,
+      isSigned: null,
       token: "",
       error: null
     };
@@ -29,40 +31,29 @@ export default {
   created() {
     var self = this;
 
-    if (!firebase.currentUser) {
-      firebase.initializeApp(dataAccessConfig);
+    console.log("created");
 
-      firebase
-        .auth()
-        .getRedirectResult()
-        .then(function(result) {
-          if (result.credential) {
-            // This gives you a Google Access Token. You can use it to access the Google API.
-            self.token = result.credential.accessToken;
-          }
-        })
-        .catch(function(error) {
-          // Handle Errors here.
-          self.error = error;
-        });
-    } else {
-      firebase.initializeApp(dataAccessConfig);
-      this.firebaseUser = firebase.auth().currentUser;
-    }
+    auth.init();
 
     // Listening for auth state changes.
     // [START authstatelistener]
-    firebase.auth().onAuthStateChanged(function() {
-      self.firebaseUser = firebase.auth().currentUser;
+    auth.onAuthStateChanged(function() {
+      console.log(
+        "onAuthStateChanged",
+        auth.currentUser.email,
+        auth.isSigned()
+      );
+      self.firebaseUser = auth.currentUser.email;
+      self.isSigned = auth.isSigned();
+      self.token = auth.accessToken;
     });
   },
   methods: {
     login() {
-      var provider = new firebase.auth.GoogleAuthProvider();
-      firebase.auth().signInWithRedirect(provider);
+      auth.signIn();
     },
     logout() {
-      firebase.auth().signOut();
+      auth.signOut();
     }
   }
 };
